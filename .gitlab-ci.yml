@@ -1,0 +1,48 @@
+stages:
+  - test
+  - report
+
+variables:
+  ENV: "staging"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+
+.python-setup: &python-setup
+  image: python:3.10-slim
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+
+api-tests:
+  <<: *python-setup
+  stage: test
+  script:
+    - source venv/bin/activate
+    - pytest tests/ -v -n auto
+        --html=reports/report.html
+        --self-contained-html
+        --tb=short
+        -q
+  artifacts:
+    when: always
+    paths:
+      - reports/report.html
+    expire_in: 7 days
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+smoke-tests:
+  <<: *python-setup
+  stage: test
+  script:
+    - source venv/bin/activate
+    - pytest tests/test_health.py -v --tb=short
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
