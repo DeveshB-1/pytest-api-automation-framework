@@ -1,0 +1,19 @@
+environments:
+  dev:
+    base_url: "https://api.dev.example.com"
+    timeout: 10
+  staging:
+    base_url: "https://api.staging.example.com"
+    timeout: 15
+  prod:
+    base_url: "https://api.example.com"
+    timeout: 20
+
+auth:
+  token_endpoint: "/auth/token"
+  username: "${API_USERNAME}"
+  password: "${API_PASSWORD}"
+
+retry:
+  max_attempts: 3
+  backoff_factor: 0.5
